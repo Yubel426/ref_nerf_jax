@@ -1,21 +1,15 @@
-from flax import struct
+import jax
+import jax.numpy as jnp
 
-@struct.dataclass
-class Model:
-  params: Any
-  # use pytree_node=False to indicate an attribute should not be touched
-  # by Jax transformations.
-  apply_fn: FunctionType = struct.field(pytree_node=False)
 
-  def __apply__(self, *args):
-    return self.apply_fn(*args)
+def refractive(viewdirs, normals):
+    n_dot_w = jnp.sum(
+        normals * viewdirs, axis=-1, keepdims=True)
+    index = 1 / 1.5
+    return (index * n_dot_w + jnp.sqrt(1 - index ** 2 * (1 - n_dot_w ** 2))) * normals - index * viewdirs
 
-model = Model(params, apply_fn)
 
-model.params = params_b  # Model is immutable. This will raise an error.
-model_b = model.replace(params=params_b)  # Use the replace method instead.
-
-# This class can now be used safely in Jax to compute gradients w.r.t. the
-# parameters.
-model = Model(params, apply_fn)
-model_grad = jax.grad(some_loss_fn)(model)
+a = jnp.arange(4)
+a = jnp.reshape(a, (2,2))
+a = a**2
+print(a)
